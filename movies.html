@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Media Picker</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <style>
+            body { font-family: 'Montserrat', sans-serif; }
+        </style>
+        <script>
+            const API_KEY = "7654c67c779b98c1d249795fd0c1497b";
+            async function searchMedia() {
+                let query = document.getElementById("search").value;
+                if (!query) {
+                    document.getElementById("dropdown").classList.add("hidden");
+                    return;
+                }
+                
+                let responseMovie = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}`);
+                let responseTV = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${API_KEY}&query=${query}`);
+                let dataMovie = await responseMovie.json();
+                let dataTV = await responseTV.json();
+                
+                let dropdown = document.getElementById("dropdown");
+                dropdown.innerHTML = "";
+                dropdown.classList.remove("hidden");
+                
+                [...(dataMovie.results || []), ...(dataTV.results || [])].forEach(item => {
+                    if (!item.poster_path || !(item.release_date || item.first_air_date)) return; // Filter unavailable media
+                    
+                    let div = document.createElement("div");
+                    div.className = "flex items-center gap-2 p-2 hover:bg-gray-700 cursor-pointer";
+                    div.onclick = () => selectMedia(item.id, item.media_type || (item.title ? 'movie' : 'tv'));
+                    
+                    let img = document.createElement("img");
+                    img.src = `https://image.tmdb.org/t/p/w92${item.poster_path}`;
+                    img.alt = "Poster";
+                    img.className = "w-12 h-16 object-cover rounded";
+                    
+                    let title = document.createElement("span");
+                    title.textContent = (item.name || item.title) + " (" + (item.release_date || item.first_air_date || "?").split("-")[0] + ")";
+                    
+                    div.appendChild(img);
+                    div.appendChild(title);
+                    dropdown.appendChild(div);
+                });
+            }
+
+            async function selectMedia(id, type) {
+                document.getElementById("dropdown").classList.add("hidden");
+                await updateMedia(id, type);
+            }
+
+            async function updateMedia(tmdbID, type) {
+                let iframe = document.getElementById("videoFrame");
+                let seriesControls = document.getElementById("seriesControls");
+                let seasonContainer = document.getElementById("seasonContainer");
+                let episodeContainer = document.getElementById("episodeContainer");
+                
+                seasonContainer.innerHTML = "";
+                episodeContainer.innerHTML = "";
+                
+                if (type === "tv") {
+                    seriesControls.classList.remove("hidden");
+                    let response = await fetch(`https://api.themoviedb.org/3/tv/${tmdbID}?api_key=${API_KEY}`);
+                    let data = await response.json();
+                    
+                    let seasonWrapper = document.createElement("div");
+                    seasonWrapper.className = "flex flex-wrap justify-center gap-2 border-b border-gray-700 pb-2";
+                    
+                    for (let i = 1; i <= data.number_of_seasons; i++) {
+                        let seasonChip = document.createElement("button");
+                        seasonChip.className = "bg-gray-800 rounded-full px-6 py-3 text-white text-lg font-bold m-1 hover:bg-gray-600";
+                        seasonChip.textContent = `Season ${i}`;
+                        seasonChip.onclick = async function() {
+                            document.querySelectorAll(".selected-season").forEach(el => el.classList.remove("bg-blue-500"));
+                            seasonChip.classList.add("bg-blue-500", "selected-season");
+                            episodeContainer.innerHTML = "";
+                            let episodeResponse = await fetch(`https://api.themoviedb.org/3/tv/${tmdbID}/season/${i}?api_key=${API_KEY}`);
+                            let episodeData = await episodeResponse.json();
+                            
+                            let episodeWrapper = document.createElement("div");
+                            episodeWrapper.className = "flex flex-wrap justify-center gap-2 mt-2";
+                            
+                            episodeData.episodes.forEach(ep => {
+                                let episodeChip = document.createElement("button");
+                                episodeChip.className = "bg-gray-700 rounded-full px-4 py-2 text-white m-1 hover:bg-gray-600";
+                                episodeChip.textContent = `Episode ${ep.episode_number}`;
+                                episodeChip.onclick = function() {
+                                    document.querySelectorAll(".selected-episode").forEach(el => el.classList.remove("bg-blue-400"));
+                                    episodeChip.classList.add("bg-blue-400", "selected-episode");
+                                    iframe.src = `https://vidsrc.to/embed/tv/${tmdbID}/${i}/${ep.episode_number}`;
+                                };
+                                episodeWrapper.appendChild(episodeChip);
+                            });
+                            episodeContainer.appendChild(episodeWrapper);
+                        };
+                        seasonWrapper.appendChild(seasonChip);
+                    }
+                    seasonContainer.appendChild(seasonWrapper);
+                } else {
+                    seriesControls.classList.add("hidden");
+                    iframe.src = `https://vidsrc.to/embed/movie/${tmdbID}`;
+                }
+            }
+        </script>
+    </head>
+    <body class="bg-gray-900 text-white flex flex-col items-center p-4">
+        <h1 class="text-4xl font-bold mb-4">Гледай филми за БЕЗ ПАРИ</h1>
+        <h2 class="text-2xl mb-4">Made by Ivan Lyubenov</h2>
+        <div class="relative w-80">
+            <div class="flex items-center gap-2 bg-gray-800 rounded-full px-4 py-2 shadow-lg relative z-20">
+                <span class="material-icons text-white">search</span>
+                <input type="text" id="search" placeholder="Search for a movie or series..." class="bg-transparent outline-none w-full" oninput="searchMedia()">
+            </div>
+            <div id="dropdown" class="absolute w-full bg-gray-800 rounded-lg mt-1 hidden shadow-lg max-h-60 overflow-y-auto z-10"></div>
+        </div>
+        <div id="seriesControls" class="hidden flex flex-col items-center w-full max-w-4xl mt-4">
+            <div id="seasonContainer" class="flex flex-wrap justify-center gap-2"></div>
+            <div id="episodeContainer" class="flex flex-wrap justify-center gap-2 mt-2"></div>
+        </div>
+        <iframe id="videoFrame" allowfullscreen class="w-full max-w-4xl aspect-video mt-4 border-none rounded-2xl"></iframe>
+    </body>
+</html>
