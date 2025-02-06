@@ -139,9 +139,7 @@
                 //iframe.src = `https://script.google.com/macros/s/AKfycbxwSQWF9OXwTkPQz1Vv2KXt9RIZ363ZpHRZn1LMnKsqqOL2OVZhk2HFu-mHx9O8x9eYAA/exec?url=https://vidsrc.me/embed/movie/${tmdbID}`
             }
         }
-        window.onbeforeunload = function(){
-            return 'Are you sure you want to leave?';
-        };
+        $("a").click(function(e) { e.preventDefault(); });
     </script>
 </head>
 <body class="bg-gray-900 text-white flex flex-col items-center p-4">
