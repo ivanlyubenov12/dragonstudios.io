@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <title>Гледай филми за БЕЗ ПАРИ</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -121,6 +122,7 @@
                                 document.querySelectorAll(".selected-episode").forEach(el => el.classList.remove("bg-blue-400"));
                                 episodeChip.classList.add("bg-blue-400", "selected-episode");
                                 iframe.src = `https://vidsrc.me/embed/tv/${tmdbID}/${i}/${ep.episode_number}`;
+                                //iframe.src = `https://script.google.com/macros/s/AKfycbxwSQWF9OXwTkPQz1Vv2KXt9RIZ363ZpHRZn1LMnKsqqOL2OVZhk2HFu-mHx9O8x9eYAA/exec?url=https://vidsrc.me/embed/tv/${tmdbID}/${i}/${ep.episode_number}`
                             };
                             episodeWrapper.appendChild(episodeChip);
                         });
@@ -134,8 +136,12 @@
             } else {
                 seriesControls.classList.add("hidden");
                 iframe.src = `https://vidsrc.me/embed/movie/${tmdbID}`;
+                //iframe.src = `https://script.google.com/macros/s/AKfycbxwSQWF9OXwTkPQz1Vv2KXt9RIZ363ZpHRZn1LMnKsqqOL2OVZhk2HFu-mHx9O8x9eYAA/exec?url=https://vidsrc.me/embed/movie/${tmdbID}`
             }
         }
+        window.onbeforeunload = function(){
+            return 'Are you sure you want to leave?';
+        };
     </script>
 </head>
 <body class="bg-gray-900 text-white flex flex-col items-center p-4">
@@ -155,6 +161,12 @@
         <div id="episodeContainer" class="flex flex-wrap justify-start gap-2 mt-2"></div>
     </div>
 
-    <iframe id="videoFrame" allowfullscreen class="w-full max-w-4xl aspect-video mt-4 border-none rounded-2xl"></iframe>
+    <iframe 
+    id="videoFrame" 
+    allowfullscreen 
+    class="w-full max-w-4xl aspect-video mt-4 border-none rounded-2xl"
+    
+    ></iframe>
+
 </body>
 </html>
