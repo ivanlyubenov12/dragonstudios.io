@@ -90,7 +90,7 @@
                                 episodeChip.onclick = function() {
                                     document.querySelectorAll(".selected-episode").forEach(el => el.classList.remove("bg-blue-400"));
                                     episodeChip.classList.add("bg-blue-400", "selected-episode");
-                                    iframe.src = `https://vidsrc.to/embed/tv/${tmdbID}/${i}/${ep.episode_number}`;
+                                    iframe.src = `https://vidsrc.me/embed/tv/${tmdbID}/${i}/${ep.episode_number}`;
                                 };
                                 episodeWrapper.appendChild(episodeChip);
                             });
@@ -101,7 +101,7 @@
                     seasonContainer.appendChild(seasonWrapper);
                 } else {
                     seriesControls.classList.add("hidden");
-                    iframe.src = `https://vidsrc.to/embed/movie/${tmdbID}`;
+                    iframe.src = `https://vidsrc.me/embed/movie/${tmdbID}`;
                 }
             }
         </script>
